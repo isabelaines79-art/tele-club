@@ -14,13 +14,25 @@ if (document.head && !document.querySelector('link[data-telectro-theme]')) {
   document.head.appendChild(theme);
 }
 
-// The 10-tap gesture is only a shortcut to the dedicated admin sign-in screen.
-window.addEventListener('load', () => {
+// The 10-tap gesture reveals the Google-authenticated admin entry only.
+window.addEventListener('load', async () => {
+  const isAdminPage = window.location.pathname.endsWith('/admin-payouts.html');
+  if (isAdminPage && window.supabase) {
+    const client = window.supabase.createClient(window.TELECTRO_CONFIG.url, window.TELECTRO_CONFIG.anonKey, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+    const { data } = await client.auth.getSession();
+    if (!data.session) {
+      window.location.replace('/admin-google-login.html');
+      return;
+    }
+  }
+
   const openAuth = window.openAuth;
   if (typeof openAuth !== 'function') return;
   window.openAuth = function (mode, isAdmin) {
     if (isAdmin) {
-      window.location.assign('/admin-payouts.html');
+      window.location.assign('/admin-google-login.html');
       return;
     }
     return openAuth.apply(this, arguments);
