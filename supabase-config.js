@@ -16,6 +16,10 @@ if (document.head && !document.querySelector('link[data-telectro-theme]')) {
 
 // The 10-tap gesture reveals the GitHub-authenticated admin entry only.
 window.addEventListener('load', async () => {
+  const shortcut = document.createElement('script');
+  shortcut.src = '/membership-shortcut.js';
+  document.body.appendChild(shortcut);
+
   const isAdminPage = window.location.pathname.endsWith('/admin-payouts.html');
   if (isAdminPage && window.supabase) {
     const client = window.supabase.createClient(window.TELECTRO_CONFIG.url, window.TELECTRO_CONFIG.anonKey, {
