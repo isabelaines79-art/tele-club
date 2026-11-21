@@ -14,7 +14,7 @@ if (document.head && !document.querySelector('link[data-telectro-theme]')) {
   document.head.appendChild(theme);
 }
 
-// The 10-tap gesture reveals the Google-authenticated admin entry only.
+// The 10-tap gesture reveals the GitHub-authenticated admin entry only.
 window.addEventListener('load', async () => {
   const isAdminPage = window.location.pathname.endsWith('/admin-payouts.html');
   if (isAdminPage && window.supabase) {
@@ -23,7 +23,7 @@ window.addEventListener('load', async () => {
     });
     const { data } = await client.auth.getSession();
     if (!data.session) {
-      window.location.replace('/admin-google-login.html');
+      window.location.replace('/admin-github-login.html');
       return;
     }
   }
@@ -32,7 +32,7 @@ window.addEventListener('load', async () => {
   if (typeof openAuth !== 'function') return;
   window.openAuth = function (mode, isAdmin) {
     if (isAdmin) {
-      window.location.assign('/admin-google-login.html');
+      window.location.assign('/admin-github-login.html');
       return;
     }
     return openAuth.apply(this, arguments);

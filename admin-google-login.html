@@ -2,83 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f6f8fc">
+  <meta http-equiv="refresh" content="0;url=/admin-github-login.html">
   <title>Admin sign in | TELECTRO</title>
-  <link rel="stylesheet" href="/site-theme.css">
-  <style>
-    body{min-height:100vh;display:grid;place-items:center;background:#f4f7fb;color:#17243a;font-family:system-ui,sans-serif;margin:0;padding:20px}
-    .card{width:min(100%,440px);padding:30px;background:#fff;border:1px solid #e4e9f1;border-radius:18px;box-shadow:0 12px 35px #17243a12}
-    .brand{font-weight:800;letter-spacing:1px;color:#17243a;text-decoration:none}.brand b{color:#245fce}
-    .eyebrow{margin-top:30px;color:#245fce;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
-    h1{font-size:30px;line-height:1.2;margin:8px 0 10px}.copy{color:#66758b;font-size:14px;line-height:1.65}
-    button{width:100%;min-height:48px;margin-top:16px;border:0;border-radius:9px;background:#245fce;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
-    button:disabled{opacity:.6;cursor:wait}.notice{min-height:24px;color:#66758b;font-size:13px;margin:14px 0 0}.notice.error{color:#b4233b}.notice.success{color:#147a52}
-    .back{display:inline-block;margin-top:15px;color:#245fce;font-size:13px}.secure{margin-top:22px;padding-top:16px;border-top:1px solid #e4e9f1;color:#66758b;font-size:12px}
-  </style>
 </head>
 <body>
-  <main class="card">
-    <a class="brand" href="/">T<b>.</b> TELECTRO</a>
-    <div class="eyebrow">Administrator access</div>
-    <h1>Sign in with Google</h1>
-    <p class="copy">Continue with the Google account assigned administrator access. Google sign-in verifies your identity; the server-side profile role still determines whether you can open the admin dashboard.</p>
-    <button id="googleSignIn" type="button">Continue with Google</button>
-    <p id="message" class="notice" role="status" aria-live="polite"></p>
-    <a class="back" href="/">Back to Telectro</a>
-    <p class="secure">Only an account whose Telectro profile role is <strong>admin</strong> can access administrator data.</p>
-  </main>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/supabase-config.js"></script>
-  <script>
-    'use strict';
-    const config = window.TELECTRO_CONFIG || {};
-    const message = document.getElementById('message');
-    const button = document.getElementById('googleSignIn');
-    const client = window.supabase && config.url && config.anonKey
-      ? window.supabase.createClient(config.url, config.anonKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } })
-      : null;
-
-    function show(text, type = '') {
-      message.textContent = text;
-      message.className = `notice${type ? ` ${type}` : ''}`;
-    }
-
-    async function verifyAdminAndContinue() {
-      if (!client) {
-        show('Authentication is not configured. Check supabase-config.js.', 'error');
-        return;
-      }
-      const { data: sessionData, error: sessionError } = await client.auth.getSession();
-      if (sessionError || !sessionData.session) return;
-      const { data: profile, error } = await client.from('profiles').select('role').eq('id', sessionData.session.user.id).maybeSingle();
-      if (error || profile?.role !== 'admin') {
-        await client.auth.signOut();
-        show('This Google account is not authorized for administrator access.', 'error');
-        return;
-      }
-      window.location.replace('/admin-payouts.html');
-    }
-
-    button.addEventListener('click', async () => {
-      if (!client) {
-        show('Authentication is not configured. Check supabase-config.js.', 'error');
-        return;
-      }
-      button.disabled = true;
-      show('Redirecting to Google…');
-      const { error } = await client.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: `${window.location.origin}/admin-google-login.html` }
-      });
-      if (error) {
-        button.disabled = false;
-        show('Google sign-in could not start. Check the Supabase Google provider setup.', 'error');
-      }
-    });
-
-    if (client) verifyAdminAndContinue();
-    else show('Authentication is not configured. Check supabase-config.js.', 'error');
-  </script>
+  <p>Admin sign-in has moved to GitHub. <a href="/admin-github-login.html">Continue to GitHub sign-in</a>.</p>
+  <script>window.location.replace('/admin-github-login.html');</script>
 </body>
 </html>
