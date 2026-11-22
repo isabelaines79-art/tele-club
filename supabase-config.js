@@ -14,12 +14,17 @@ if (document.head && !document.querySelector('link[data-telectro-theme]')) {
   document.head.appendChild(theme);
 }
 
-// Make the existing member dashboard's email fallback work for phone-auth users.
-// Older application records still have an email field, so retain the phone as its identifier there.
+// Capture the page's Supabase client when it is created. This script loads before
+// index.html initializes the client, so capturing it here avoids a load-time race.
 if (window.supabase?.createClient) {
-  const createClient = window.supabase.createClient.bind(window.supabase);
+  const originalCreateClient = window.supabase.createClient.bind(window.supabase);
   window.supabase.createClient = (...args) => {
-    const client = createClient(...args);
+    const client = originalCreateClient(...args);
+    const authForm = document.getElementById('af');
+    if (authForm) authForm.__telectroSupabase = client;
+
+    // Older dashboard code expects an email identifier. For phone-auth accounts,
+    // use the verified phone as that display/application compatibility fallback.
     const normalizeSession = session => {
       if (session?.user && !session.user.email) session.user.email = session.user.phone || '';
       return session;
@@ -49,8 +54,7 @@ window.addEventListener('load', () => {
     };
   }
 
-  // Switch the existing member auth dialog to phone/password without changing the
-  // application dashboard or role-based admin flow.
+  // Use phone/password for member signup and login, leaving the dashboard intact.
   const form = document.getElementById('af');
   const input = document.getElementById('ae');
   if (!form || !input) return;
@@ -60,10 +64,9 @@ window.addEventListener('load', () => {
   input.inputMode = 'tel';
   input.placeholder = '+2348012345678';
   input.maxLength = 20;
-  input.removeAttribute('required');
   input.required = true;
-  const emailLabel = form.querySelector('label[for="ae"]');
-  if (emailLabel) emailLabel.textContent = 'Mobile number';
+  const phoneLabel = form.querySelector('label[for="ae"]');
+  if (phoneLabel) phoneLabel.textContent = 'Mobile number';
   const forgot = document.getElementById('fg');
   if (forgot) forgot.hidden = true;
 
@@ -89,11 +92,7 @@ window.addEventListener('load', () => {
     event.stopImmediatePropagation();
     const message = document.getElementById('am');
     const button = document.getElementById('ab');
-    const client = window.supabase && window.TELECTRO_CONFIG?.url
-      ? window.supabase
-      : null;
-    // The configured client is created by the page's existing script; expose it
-    // through the same auth API by using the client reference captured by the form.
+    const client = form.__telectroSupabase;
     const phone = normalizePhone(input.value);
     const password = document.getElementById('apw')?.value || '';
     const say = (text, kind = '') => {
@@ -104,26 +103,22 @@ window.addEventListener('load', () => {
     };
     if (!phone) return say('Enter a valid phone number, including your country code.', 'er');
     if (!password) return say('Enter your password.', 'er');
-
-    // The page keeps its Supabase client in a private variable. Its original
-    // submit handler is intercepted only after we obtain that client below.
-    const clientFromForm = form.__telectroSupabase;
-    if (!client || !clientFromForm) return say('Authentication is not configured. Reload the page and try again.', 'er');
+    if (!client) return say('Authentication is not configured. Reload the page and try again.', 'er');
 
     button.disabled = true;
     say('');
     try {
       const result = form.dataset.authMode === 'signup'
-        ? await clientFromForm.auth.signUp({
+        ? await client.auth.signUp({
             phone,
             password,
             options: { data: { full_name: document.getElementById('an')?.value.trim() || '' } }
           })
-        : await clientFromForm.auth.signInWithPassword({ phone, password });
+        : await client.auth.signInWithPassword({ phone, password });
       if (result.error) {
         say(result.error.message || 'Authentication failed. Check your phone number and password.', 'er');
       } else if (form.dataset.authMode === 'signup' && !result.data?.session) {
-        say('Account created. Phone confirmation still appears to be enabled in Supabase Auth; disable Confirm Phone to sign in without an SMS code.', 'er');
+        say('Account created, but phone confirmation is enabled in Supabase Auth. Complete the SMS confirmation before logging in.', 'er');
       } else {
         document.getElementById('dlg')?.close();
       }
@@ -139,19 +134,4 @@ window.addEventListener('load', () => {
   document.getElementById('tLogin')?.addEventListener('click', () => updateMode('login'));
   document.getElementById('tSign')?.addEventListener('click', () => updateMode('signup'));
   updateMode('login');
-
-  // Attach the page's existing Supabase client when the auth form is submitted.
-  // The lexical client is not exposed globally, so wrap createClient before the
-  // page script initializes it and attach each created client to the dialog.
-  const originalCreateClient = window.supabase?.createClient;
-  if (originalCreateClient && !originalCreateClient.__telectroBound) {
-    const wrappedCreateClient = function (...args) {
-      const client = originalCreateClient.apply(this, args);
-      const authForm = document.getElementById('af');
-      if (authForm) authForm.__telectroSupabase = client;
-      return client;
-    };
-    wrappedCreateClient.__telectroBound = true;
-    window.supabase.createClient = wrappedCreateClient;
-  }
 });
