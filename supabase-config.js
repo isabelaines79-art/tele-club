@@ -14,8 +14,7 @@ if (document.head && !document.querySelector('link[data-telectro-theme]')) {
   document.head.appendChild(theme);
 }
 
-// Capture the page's Supabase client when it is created. This script loads before
-// index.html initializes the client, so capturing it here avoids a load-time race.
+// Capture the page's Supabase client when it is created.
 if (window.supabase?.createClient) {
   const originalCreateClient = window.supabase.createClient.bind(window.supabase);
   window.supabase.createClient = (...args) => {
@@ -40,6 +39,23 @@ if (window.supabase?.createClient) {
 }
 
 window.addEventListener('load', () => {
+  // Ten quick taps on the TELECTRO logo open the dedicated admin sign-in page.
+  const logo = document.querySelector('.logo');
+  let logoTaps = 0;
+  let logoTapTimer = null;
+  if (logo) {
+    logo.addEventListener('click', event => {
+      event.preventDefault();
+      logoTaps += 1;
+      clearTimeout(logoTapTimer);
+      logoTapTimer = setTimeout(() => { logoTaps = 0; }, 3000);
+      if (logoTaps >= 10) {
+        logoTaps = 0;
+        window.location.assign('/admin-payouts.html');
+      }
+    });
+  }
+
   const openAuth = window.openAuth;
   if (typeof openAuth === 'function') {
     window.openAuth = function (mode, isAdmin) {
@@ -78,7 +94,6 @@ window.addEventListener('load', () => {
   };
 
   form.addEventListener('submit', async event => {
-    event.preventEventDefault?.();
     event.preventDefault();
     event.stopImmediatePropagation();
     const message = document.getElementById('am');
