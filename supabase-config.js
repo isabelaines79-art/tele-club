@@ -23,8 +23,6 @@ if (window.supabase?.createClient) {
     const authForm = document.getElementById('af');
     if (authForm) authForm.__telectroSupabase = client;
 
-    // Older dashboard code expects an email identifier. For phone-auth accounts,
-    // use the verified phone as that display/application compatibility fallback.
     const normalizeSession = session => {
       if (session?.user && !session.user.email) session.user.email = session.user.phone || '';
       return session;
@@ -41,7 +39,6 @@ if (window.supabase?.createClient) {
   };
 }
 
-// The 10-tap gesture is only a shortcut to the dedicated admin sign-in screen.
 window.addEventListener('load', () => {
   const openAuth = window.openAuth;
   if (typeof openAuth === 'function') {
@@ -54,14 +51,12 @@ window.addEventListener('load', () => {
     };
   }
 
-  // Use phone/password for member signup and login, leaving the dashboard intact.
   const form = document.getElementById('af');
   const input = document.getElementById('ae');
   if (!form || !input) return;
 
   input.type = 'tel';
   input.autocomplete = 'tel';
-  input.inputMode = 'tel';
   input.placeholder = '+2348012345678';
   input.maxLength = 20;
   input.required = true;
@@ -69,11 +64,6 @@ window.addEventListener('load', () => {
   if (phoneLabel) phoneLabel.textContent = 'Mobile number';
   const forgot = document.getElementById('fg');
   if (forgot) forgot.hidden = true;
-
-  const intro = document.querySelector('#pub .g4 .card .sub');
-  if (intro && intro.textContent.includes('email')) {
-    intro.textContent = 'Sign up with your mobile number and password.';
-  }
 
   const normalizePhone = value => {
     const trimmed = value.trim();
@@ -88,6 +78,7 @@ window.addEventListener('load', () => {
   };
 
   form.addEventListener('submit', async event => {
+    event.preventEventDefault?.();
     event.preventDefault();
     event.stopImmediatePropagation();
     const message = document.getElementById('am');
@@ -98,7 +89,7 @@ window.addEventListener('load', () => {
     const say = (text, kind = '') => {
       if (message) {
         message.textContent = text;
-        message.className = `msg ${kind}`;
+        message.className = 'msg ' + kind;
       }
     };
     if (!phone) return say('Enter a valid phone number, including your country code.', 'er');
@@ -108,19 +99,31 @@ window.addEventListener('load', () => {
     button.disabled = true;
     say('');
     try {
-      const result = form.dataset.authMode === 'signup'
+      const signup = form.dataset.authMode === 'signup';
+      const result = signup
         ? await client.auth.signUp({
             phone,
             password,
             options: { data: { full_name: document.getElementById('an')?.value.trim() || '' } }
           })
         : await client.auth.signInWithPassword({ phone, password });
+
       if (result.error) {
         say(result.error.message || 'Authentication failed. Check your phone number and password.', 'er');
-      } else if (form.dataset.authMode === 'signup' && !result.data?.session) {
+      } else if (signup && !result.data?.session) {
         say('Account created, but phone confirmation is enabled in Supabase Auth. Complete the SMS confirmation before logging in.', 'er');
       } else {
         document.getElementById('dlg')?.close();
+        if (signup) {
+          window.location.assign('/payment.html');
+          return;
+        }
+
+        const { data: profile } = await client.from('profiles').select('role').eq('id', result.data.user.id).maybeSingle();
+        if (profile?.role !== 'admin') {
+          const { data: application } = await client.from('applications').select('user_id').eq('user_id', result.data.user.id).maybeSingle();
+          if (!application) window.location.assign('/payment.html');
+        }
       }
     } catch (error) {
       say(error.message || 'Authentication failed. Please try again.', 'er');
@@ -129,7 +132,6 @@ window.addEventListener('load', () => {
     }
   }, true);
 
-  // Keep the selected tab in sync with the existing dialog controls.
   const updateMode = mode => { form.dataset.authMode = mode; };
   document.getElementById('tLogin')?.addEventListener('click', () => updateMode('login'));
   document.getElementById('tSign')?.addEventListener('click', () => updateMode('signup'));
