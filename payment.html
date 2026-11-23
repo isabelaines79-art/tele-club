@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#070b14">
+  <title>Confirm membership payment | TELECTRO</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/supabase-config.js"></script>
+  <style>
+    :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#070b14;color:#f1f4fb;font:15px/1.55 system-ui,sans-serif}.wrap{width:min(680px,calc(100% - 32px));margin:32px auto}.card{background:#0f1626;border:1px solid #ffffff17;border-radius:16px;padding:22px;margin-top:16px}.eyebrow{color:#38d0c4;text-transform:uppercase;font-size:12px;font-weight:800;letter-spacing:1.5px}h1{margin:8px 0}h2{margin-top:0}.muted{color:#8f9bb3}.amount{font-size:34px;font-weight:800}.details{display:grid;gap:10px}.detail{background:#151d31;border:1px solid #ffffff12;border-radius:12px;padding:12px}.detail small{display:block;color:#8f9bb3}.detail b{font-size:17px}.f{margin:12px 0}.f label{display:block;margin-bottom:5px;color:#8f9bb3;font-size:12px;font-weight:700}.f input,.f textarea{width:100%;background:#070b14;color:#f1f4fb;border:1px solid #ffffff17;border-radius:10px;padding:11px 12px;font:inherit}.check{display:flex;gap:10px;align-items:flex-start}.check input{margin-top:4px}.b{border:0;border-radius:11px;padding:12px 16px;font-weight:750;color:#fff;background:linear-gradient(135deg,#4f7cff,#6a5cff);cursor:pointer;text-decoration:none;display:inline-block;text-align:center}.b:disabled{opacity:.55;cursor:not-allowed}.wa{background:#1f8f55}.q{background:#151d31;border:1px solid #ffffff17}.actions{display:flex;gap:10px;flex-wrap:wrap}.msg{min-height:22px;color:#8f9bb3}.msg.error{color:#ff6b7d}.msg.success{color:#3ddc97}.hidden{display:none!important}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <a href="/" class="muted">← Back to Telectro</a>
+    <section class="card">
+      <div class="eyebrow">Step 1 of 2 · Membership payment</div>
+      <h1>Pay your membership fee</h1>
+      <p class="muted">Send <b>₦75,000</b> to the account below, then confirm your payment with the admin.</p>
+      <div class="details">
+        <div class="detail"><small>Bank</small><b>OPay</b></div>
+        <div class="detail"><small>Account number</small><b>6541065478</b></div>
+        <div class="detail"><small>Account name</small><b>DIVINE CHINONSO NWABUDE</b></div>
+      </div>
+      <p class="muted">Telectro never asks for your PIN, password, OTP or card details.</p>
+      <label class="check"><input id="paidCheck" type="checkbox"><span>I confirm that I have sent the membership payment to the account above.</span></label>
+      <div class="actions" style="margin-top:16px">
+        <a id="whatsapp" class="b wa" target="_blank" rel="noopener" href="#">Send proof on WhatsApp</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="eyebrow">Step 2 of 2 · Application details</div>
+      <h2>Complete your application</h2>
+      <p class="muted">Your dashboard remains locked until the admin independently confirms the payment.</p>
+      <form id="applicationForm">
+        <div class="f"><label for="fullName">Full name</label><input id="fullName" maxlength="120" autocomplete="name" required></div>
+        <div class="f"><label for="phone">Mobile number</label><input id="phone" type="tel" maxlength="30" required></div>
+        <div class="f"><label for="address">Delivery address</label><textarea id="address" maxlength="500" required></textarea></div>
+        <button id="submit" class="b" type="submit" disabled>Submit application</button>
+        <p id="message" class="msg" role="status"></p>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    'use strict';
+    const config = window.TELECTRO_CONFIG || {};
+    const client = window.supabase && config.url && config.anonKey
+      ? window.supabase.createClient(config.url, config.anonKey, { auth: { persistSession: true, autoRefreshToken: true } })
+      : null;
+    const message = document.getElementById('message');
+    const checkbox = document.getElementById('paidCheck');
+    const submit = document.getElementById('submit');
+    let currentUser = null;
+
+    function say(text, kind='') { message.textContent = text; message.className = 'msg ' + kind; }
+
+    async function init() {
+      if (!client) return say('Authentication is not configured.', 'error');
+      const { data: { user } } = await client.auth.getUser();
+      if (!user) { location.replace('/'); return; }
+      currentUser = user;
+      const profile = await client.from('profiles').select('full_name,role').eq('id', user.id).maybeSingle();
+      if (profile.data?.role === 'admin') { location.replace('/'); return; }
+      document.getElementById('fullName').value = profile.data?.full_name || '';
+
+      const application = await client.from('applications').select('application_status,payment_status').eq('user_id', user.id).maybeSingle();
+      if (application.data) { location.replace('/'); return; }
+
+      const phone = user.phone || '';
+      document.getElementById('phone').value = phone;
+      const text = encodeURIComponent(`Hello Telectro Admin, I have paid ₦75,000 for membership. My account/phone: ${phone || '(member phone)'}.`);
+      document.getElementById('whatsapp').href = `https://wa.me/2347039905728?text=${text}`;
+    }
+
+    checkbox.addEventListener('change', () => { submit.disabled = !checkbox.checked; });
+
+    document.getElementById('applicationForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      if (!client || !currentUser) return say('Please sign in again.', 'error');
+      if (!checkbox.checked) return say('Confirm that you sent the payment first.', 'error');
+      submit.disabled = true;
+      say('Submitting…');
+
+      const fullName = document.getElementById('fullName').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const address = document.getElementById('address').value.trim();
+      const application = await client.from('applications').insert({
+        user_id: currentUser.id,
+        full_name: fullName,
+        email: currentUser.email || '',
+        phone,
+        address,
+        application_status: 'pending',
+        payment_status: 'pending',
+        delivery_status: 'not_started'
+      });
+
+      if (application.error) {
+        submit.disabled = false;
+        return say(application.error.code === '23505' ? 'You already have an application.' : 'Could not submit. Check your details and try again.', 'error');
+      }
+
+      const confirmation = await client.from('payment_confirmations').upsert({
+        user_id: currentUser.id,
+        status: 'pending',
+        confirmed_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+
+      if (confirmation.error) {
+        say('Application submitted. Send payment proof to the admin on WhatsApp.', 'success');
+      } else {
+        say('Application submitted. Send payment proof to the admin on WhatsApp.', 'success');
+      }
+      setTimeout(() => location.replace('/'), 1200);
+    });
+
+    init();
+  </script>
+</body>
+</html>
