@@ -14,6 +14,12 @@ if (document.head && !document.querySelector('link[data-telectro-theme]')) {
   document.head.appendChild(theme);
 }
 
+// Load dashboard save/polish behavior on the main dashboard and payout-details page.
+// document.write keeps this parser-inserted script ahead of the page's legacy submit handlers.
+if (document.currentScript && ['/', '/index.html', '/member-payout-details.html'].includes(location.pathname)) {
+  document.write('<script src="/dashboard-enhancements.js"><\\/script>');
+}
+
 // Capture the page's Supabase client when it is created.
 if (window.supabase?.createClient) {
   const originalCreateClient = window.supabase.createClient.bind(window.supabase);
