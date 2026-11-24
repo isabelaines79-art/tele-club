@@ -5,17 +5,25 @@ window.TELECTRO_CONFIG = {
   anonKey: "sb_publishable_LLDzFZ0gv9bOE3PxR6AXXA_E17cxGmr"
 };
 
-// Apply the shared white visual theme on every page that loads this config.
-if (document.head && !document.querySelector('link[data-telectro-theme]')) {
-  const theme = document.createElement('link');
-  theme.rel = 'stylesheet';
-  theme.href = '/light-theme.css';
-  theme.dataset.telectroTheme = 'true';
-  document.head.appendChild(theme);
+// Apply shared white styling and muted color refinements across the site.
+if (document.head) {
+  if (!document.querySelector('link[data-telectro-theme]')) {
+    const theme = document.createElement('link');
+    theme.rel = 'stylesheet';
+    theme.href = '/light-theme.css';
+    theme.dataset.telectroTheme = 'true';
+    document.head.appendChild(theme);
+  }
+  if (!document.querySelector('link[data-telectro-refinements]')) {
+    const refinements = document.createElement('link');
+    refinements.rel = 'stylesheet';
+    refinements.href = '/theme-refinements.css';
+    refinements.dataset.telectroRefinements = 'true';
+    document.head.appendChild(refinements);
+  }
 }
 
 // Load dashboard save/polish behavior on the main dashboard and payout-details page.
-// document.write keeps this parser-inserted script ahead of the page's legacy submit handlers.
 if (document.currentScript && ['/', '/index.html', '/member-payout-details.html'].includes(location.pathname)) {
   document.write('<script src="/dashboard-enhancements.js"><\\/script>');
 }
