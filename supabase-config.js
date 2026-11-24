@@ -23,9 +23,16 @@ if (document.head) {
   }
 }
 
-// Load dashboard save/polish behavior on the main dashboard and payout-details page.
-if (document.currentScript && ['/', '/index.html', '/member-payout-details.html'].includes(location.pathname)) {
-  document.write('<script src="/dashboard-enhancements.js"><\\/script>');
+// Load dashboard enhancements without document.write. The old document.write call
+// emitted a malformed script closing tag, which could stop the page parser and leave
+// the full-screen boot spinner visible indefinitely.
+if (['/', '/index.html', '/member-payout-details.html'].includes(location.pathname) &&
+    !document.querySelector('script[data-dashboard-enhancements]')) {
+  const enhancements = document.createElement('script');
+  enhancements.src = '/dashboard-enhancements.js';
+  enhancements.dataset.dashboardEnhancements = 'true';
+  enhancements.async = false;
+  document.head.appendChild(enhancements);
 }
 
 // Capture the page's Supabase client when it is created.
