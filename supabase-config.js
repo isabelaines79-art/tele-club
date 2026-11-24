@@ -5,11 +5,11 @@ window.TELECTRO_CONFIG = {
   anonKey: "sb_publishable_LLDzFZ0gv9bOE3PxR6AXXA_E17cxGmr"
 };
 
-// Apply the shared light visual theme on every page that loads this config.
+// Apply the shared white visual theme on every page that loads this config.
 if (document.head && !document.querySelector('link[data-telectro-theme]')) {
   const theme = document.createElement('link');
   theme.rel = 'stylesheet';
-  theme.href = '/site-theme.css';
+  theme.href = '/light-theme.css';
   theme.dataset.telectroTheme = 'true';
   document.head.appendChild(theme);
 }
