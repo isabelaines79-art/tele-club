@@ -35,6 +35,24 @@ if (['/', '/index.html', '/member-payout-details.html'].includes(location.pathna
   document.head.appendChild(enhancements);
 }
 
+// Keep a valid public referral code while a visitor moves through the signup flow.
+// The database trigger records the referrer at account creation; client metadata is
+// only an attribution hint, never proof that a reward is payable.
+const referralStorageKey = 'telectro_referral_code';
+const referralPattern = /^[A-Z0-9]{6,16}$/;
+try {
+  const urlCode = new URLSearchParams(location.search).get('ref');
+  if (urlCode && referralPattern.test(urlCode.trim().toUpperCase())) {
+    localStorage.setItem(referralStorageKey, urlCode.trim().toUpperCase());
+  }
+} catch (_) {}
+function getReferralCode() {
+  try {
+    const code = localStorage.getItem(referralStorageKey) || '';
+    return referralPattern.test(code) ? code : '';
+  } catch (_) { return ''; }
+}
+
 // Capture the page's Supabase client when it is created.
 if (window.supabase?.createClient) {
   const originalCreateClient = window.supabase.createClient.bind(window.supabase);
@@ -136,19 +154,23 @@ window.addEventListener('load', () => {
     say('');
     try {
       const signup = form.dataset.authMode === 'signup';
+      const signupData = { full_name: document.getElementById('an')?.value.trim() || '' };
+      const referralCode = signup ? getReferralCode() : '';
+      if (referralCode) signupData.referral_code = referralCode;
       const result = signup
-        ? await client.auth.signUp({
-            phone,
-            password,
-            options: { data: { full_name: document.getElementById('an')?.value.trim() || '' } }
-          })
+        ? await client.auth.signUp({ phone, password, options: { data: signupData } })
         : await client.auth.signInWithPassword({ phone, password });
 
       if (result.error) {
         say(result.error.message || 'Authentication failed. Check your phone number and password.', 'er');
       } else if (signup && !result.data?.session) {
-        say('Account created, but phone confirmation is enabled in Supabase Auth. Complete the SMS confirmation before logging in.', 'er');
+        // Account creation (including referral attribution) succeeded; phone confirmation remains required.
+        try { localStorage.removeItem(referralStorageKey); } catch (_) {}
+        say('Account created. Complete the phone confirmation to finish signup.', 'ok');
       } else {
+        if (signup) {
+          try { localStorage.removeItem(referralStorageKey); } catch (_) {}
+        }
         document.getElementById('dlg')?.close();
         if (signup) {
           window.location.assign('/payment.html');
