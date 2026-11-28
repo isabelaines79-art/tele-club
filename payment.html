@@ -2,115 +2,116 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#070b14">
-  <title>Confirm membership payment | TELECTRO</title>
+  <title>Membership checkout | TELECTRO</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
   <style>
-    :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#070b14;color:#f1f4fb;font:15px/1.55 system-ui,sans-serif}.wrap{width:min(680px,calc(100% - 32px));margin:32px auto}.card{background:#0f1626;border:1px solid #ffffff17;border-radius:16px;padding:22px;margin-top:16px}.eyebrow{color:#38d0c4;text-transform:uppercase;font-size:12px;font-weight:800;letter-spacing:1.5px}h1{margin:8px 0}h2{margin-top:0}.muted{color:#8f9bb3}.details{display:grid;gap:10px}.detail{background:#151d31;border:1px solid #ffffff12;border-radius:12px;padding:12px}.detail small{display:block;color:#8f9bb3}.detail b{font-size:17px}.f{margin:12px 0}.f label{display:block;margin-bottom:5px;color:#8f9bb3;font-size:12px;font-weight:700}.f input,.f textarea{width:100%;background:#070b14;color:#f1f4fb;border:1px solid #ffffff17;border-radius:10px;padding:11px 12px;font:inherit}.check{display:flex;gap:10px;align-items:flex-start}.check input{margin-top:4px}.b{border:0;border-radius:11px;padding:12px 16px;font-weight:750;color:#fff;background:linear-gradient(135deg,#4f7cff,#6a5cff);cursor:pointer;text-decoration:none;display:inline-block;text-align:center}.b:disabled{opacity:.55;cursor:not-allowed}.wa{background:#1f8f55}.actions{display:flex;gap:10px;flex-wrap:wrap}.msg{min-height:22px;color:#8f9bb3}.msg.error{color:#ff6b7d}.msg.success{color:#3ddc97}
+    :root{color-scheme:dark;--bg:#070b14;--panel:#0f1626;--line:#ffffff18;--ink:#f1f4fb;--muted:#a5b0c5;--accent:#4f7cff;--good:#3ddc97;--bad:#ff7182}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -20%,#213660 0,transparent 58%),var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .wrap{width:min(720px,100%);margin:0 auto;padding:24px 18px calc(42px + env(safe-area-inset-bottom))}.back{display:inline-block;margin:4px 0 18px;color:#c6d3ee;text-decoration:none}.card{padding:clamp(20px,5vw,32px);border:1px solid var(--line);border-radius:22px;background:#0f1626ed;box-shadow:0 24px 70px #0005;margin-bottom:16px}.eyebrow{color:#8eafff;font-size:12px;font-weight:750;letter-spacing:.13em;text-transform:uppercase}h1{font-size:clamp(29px,7vw,42px);line-height:1.12;letter-spacing:-.03em;margin:8px 0 12px}h2{font-size:22px;margin:0 0 8px}.muted{color:var(--muted)}.price{font-size:clamp(30px,8vw,40px);font-weight:800;margin:18px 0}.notice{padding:13px 15px;border:1px solid #4f7cff45;border-radius:14px;background:#4f7cff12;color:#dce6ff}.fields{display:grid;gap:15px;margin-top:20px}.field{display:grid;gap:7px}.field label{font-size:14px;color:#d7deec}.field input,.field textarea{width:100%;min-height:48px;padding:12px 14px;border:1px solid #ffffff25;border-radius:12px;background:#080e1a;color:var(--ink);font:inherit}.field textarea{min-height:100px;resize:vertical}.field input:focus,.field textarea:focus{outline:2px solid #4f7cff;border-color:transparent}.button{width:100%;min-height:50px;padding:12px 16px;border:0;border-radius:13px;background:linear-gradient(120deg,#4f7cff,#6a67d8);color:#fff;font:inherit;font-weight:750;cursor:pointer}.button:disabled{opacity:.7;cursor:wait}.button.busy:before{content:"";display:inline-block;width:15px;height:15px;margin:0 10px -3px 0;border:2px solid #ffffff70;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.message{min-height:24px;margin:12px 0 0}.message.error{color:var(--bad)}.message.success{color:var(--good)}.fine{font-size:13px}.hidden{display:none!important}a{color:#a8c0ff}
+    @media(max-width:480px){.wrap{padding:14px 12px calc(28px + env(safe-area-inset-bottom))}.card{border-radius:17px;padding:20px 17px}.button{min-height:52px;font-size:15px}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
   </style>
 </head>
 <body>
   <main class="wrap">
-    <a href="/" class="muted">← Back to Telectro</a>
+    <a class="back" href="/">← Back to Telectro</a>
     <section class="card">
-      <div class="eyebrow">Step 1 of 2 · Membership payment</div>
-      <h1>Pay your membership fee</h1>
-      <p class="muted">Send <b>₦75,000</b> to the account below, then confirm your payment with the admin.</p>
-      <div class="details">
-        <div class="detail"><small>Bank</small><b>OPay</b></div>
-        <div class="detail"><small>Account number</small><b>6541065478</b></div>
-        <div class="detail"><small>Account name</small><b>DIVINE CHINONSO NWABUDE</b></div>
-      </div>
-      <p class="muted">Telectro never asks for your PIN, password, OTP or card details.</p>
-      <label class="check"><input id="paidCheck" type="checkbox"><span>I confirm that I have sent the membership payment to the account above.</span></label>
-      <div class="actions" style="margin-top:16px"><a id="whatsapp" class="b wa" target="_blank" rel="noopener" href="#">Send proof on WhatsApp</a></div>
+      <div class="eyebrow">Secure membership checkout</div>
+      <h1>Complete your membership</h1>
+      <p class="muted">Submit your application, then pay securely through Paystack. Your payment status updates only after server-side verification.</p>
+      <div class="price">₦75,000</div>
+      <div class="notice">Paystack will open its secure hosted checkout. Telectro never asks for your card PIN, password, or OTP outside Paystack.</div>
     </section>
-
     <section class="card">
-      <div class="eyebrow">Step 2 of 2 · Application details</div>
-      <h2>Complete your application</h2>
-      <p class="muted">Your dashboard remains locked until the admin independently confirms the payment.</p>
-      <form id="applicationForm">
-        <div class="f"><label for="fullName">Full name</label><input id="fullName" maxlength="120" autocomplete="name" required></div>
-        <div class="f"><label for="phone">Mobile number</label><input id="phone" type="tel" maxlength="30" required></div>
-        <div class="f"><label for="address">Delivery address</label><textarea id="address" maxlength="500" required></textarea></div>
-        <button id="submit" class="b" type="submit" disabled>Submit application</button>
-        <p id="message" class="msg" role="status"></p>
+      <h2>Application details</h2>
+      <p class="muted">A valid email address is needed for Paystack’s receipt.</p>
+      <form id="applicationForm" class="fields">
+        <div class="field"><label for="fullName">Full name</label><input id="fullName" maxlength="120" autocomplete="name" required></div>
+        <div class="field"><label for="email">Email address</label><input id="email" type="email" maxlength="254" autocomplete="email" required></div>
+        <div class="field"><label for="phone">Mobile number</label><input id="phone" type="tel" maxlength="30" autocomplete="tel" required></div>
+        <div class="field"><label for="address">Delivery address</label><textarea id="address" maxlength="500" autocomplete="street-address" required></textarea></div>
+        <button id="submit" class="button" type="submit">Continue to secure payment</button>
       </form>
+      <p id="message" class="message" role="status" aria-live="polite"></p>
+      <p class="muted fine">If you already submitted an application, you can retry checkout here. Payment verification may take a few seconds after returning from Paystack.</p>
     </section>
   </main>
-
   <script>
     'use strict';
     const config = window.TELECTRO_CONFIG || {};
     const client = window.supabase && config.url && config.anonKey
-      ? window.supabase.createClient(config.url, config.anonKey, { auth: { persistSession: true, autoRefreshToken: true } })
+      ? window.supabase.createClient(config.url, config.anonKey, { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } })
       : null;
-    const message = document.getElementById('message');
-    const checkbox = document.getElementById('paidCheck');
-    const submit = document.getElementById('submit');
-    let currentUser = null;
-
-    function say(text, kind='') { message.textContent = text; message.className = 'msg ' + kind; }
+    const $ = id => document.getElementById(id);
+    const form = $('applicationForm'), button = $('submit'), message = $('message');
+    let user = null, existingApplication = null;
+    function say(text, kind='') { message.textContent = text; message.className = 'message ' + kind; }
+    function busy(value, label='') { button.disabled = value; button.classList.toggle('busy', value); button.textContent = value ? label : 'Continue to secure payment'; }
 
     async function init() {
-      if (!client) return say('Authentication is not configured.', 'error');
-      const { data: { user } } = await client.auth.getUser();
-      if (!user) { location.replace('/'); return; }
-      currentUser = user;
-      const profile = await client.from('profiles').select('full_name,role').eq('id', user.id).maybeSingle();
-      if (profile.data?.role === 'admin') { location.replace('/'); return; }
-      document.getElementById('fullName').value = profile.data?.full_name || '';
-
-      const application = await client.from('applications').select('application_status,payment_status').eq('user_id', user.id).maybeSingle();
-      if (application.data) { location.replace('/'); return; }
-
-      const phone = user.phone || '';
-      document.getElementById('phone').value = phone;
-      const text = encodeURIComponent(`Hello Telectro Admin, I have paid ₦75,000 for membership. My account/phone: ${phone || '(member phone)'}.`);
-      document.getElementById('whatsapp').href = `https://wa.me/2347039905728?text=${text}`;
+      if (!client) { say('Authentication is not configured. Please contact Telectro support.', 'error'); button.disabled = true; return; }
+      const { data:{user: current}, error } = await client.auth.getUser();
+      if (error || !current) { location.replace('/'); return; }
+      user = current;
+      const [{data: profile}, {data: application, error: appError}] = await Promise.all([
+        client.from('profiles').select('full_name,role').eq('id', user.id).maybeSingle(),
+        client.from('applications').select('*').eq('user_id', user.id).maybeSingle()
+      ]);
+      if (profile?.role === 'admin') { location.replace('/'); return; }
+      if (appError) { say('Could not load your application. Reload and try again.', 'error'); return; }
+      existingApplication = application;
+      $('fullName').value = application?.full_name || profile?.full_name || '';
+      $('email').value = application?.email || user.email || '';
+      $('phone').value = application?.phone || user.phone || '';
+      $('address').value = application?.address || '';
+      if (application?.payment_status === 'confirmed') { say('Your payment is confirmed. Opening your dashboard…', 'success'); setTimeout(() => location.replace('/'), 800); }
+      const reference = new URLSearchParams(location.search).get('reference');
+      if (reference) await verifyReturn(reference);
     }
 
-    checkbox.addEventListener('change', () => { submit.disabled = !checkbox.checked; });
+    async function verifyReturn(reference) {
+      busy(true, 'Verifying payment…'); say('Checking your payment securely with Paystack…');
+      try {
+        const { data, error } = await client.functions.invoke('paystack-verify', { body:{ reference } });
+        if (error || data?.error) throw new Error(data?.error || error.message);
+        say('Payment verified. Your dashboard is being updated.', 'success');
+        history.replaceState({}, '', location.pathname);
+        setTimeout(() => location.replace('/'), 900);
+      } catch (error) {
+        say(error.message || 'Payment is not confirmed yet. You can safely retry verification or checkout.', 'error');
+      } finally { busy(false); }
+    }
 
-    document.getElementById('applicationForm').addEventListener('submit', async event => {
+    form.addEventListener('submit', async event => {
       event.preventDefault();
-      if (!client || !currentUser) return say('Please sign in again.', 'error');
-      if (!checkbox.checked) return say('Confirm that you sent the payment first.', 'error');
-      submit.disabled = true;
-      say('Submitting…');
-
-      const fullName = document.getElementById('fullName').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-      const address = document.getElementById('address').value.trim();
-      const application = await client.from('applications').insert({
-        user_id: currentUser.id,
-        full_name: fullName,
-        email: currentUser.email || phone,
-        phone,
-        address,
-        application_status: 'pending',
-        payment_status: 'pending',
-        delivery_status: 'not_started'
-      });
-
-      if (application.error) {
-        submit.disabled = false;
-        return say(application.error.code === '23505' ? 'You already have an application.' : 'Could not submit. Check your details and try again.', 'error');
+      if (!client || !user) return say('Please sign in again before continuing.', 'error');
+      busy(true, 'Preparing secure checkout…'); say('');
+      try {
+        if (!existingApplication) {
+          const { data, error } = await client.from('applications').insert({
+            user_id:user.id,
+            full_name:$('fullName').value.trim(),
+            email:$('email').value.trim(),
+            phone:$('phone').value.trim(),
+            address:$('address').value.trim(),
+            application_status:'pending', payment_status:'pending', delivery_status:'not_started'
+          }).select('*').single();
+          if (error) throw new Error(error.code === '23505' ? 'Your application already exists. Reload to continue checkout.' : error.message);
+          existingApplication = data;
+        }
+        const { data, error } = await client.functions.invoke('paystack-initialize', { body:{} });
+        if (error || data?.error) throw new Error(data?.error || error.message);
+        if (!data?.authorization_url || !data.authorization_url.startsWith('https://checkout.paystack.com/')) throw new Error('Paystack returned an invalid checkout address. Please retry.');
+        location.assign(data.authorization_url);
+      } catch (error) {
+        say(error.message || 'Could not start checkout. Please retry.', 'error');
+        busy(false);
       }
-
-      await client.from('payment_confirmations').insert({
-        user_id: currentUser.id,
-        status: 'pending'
-      });
-
-      say('Application submitted. Send payment proof to the admin on WhatsApp.', 'success');
-      setTimeout(() => location.replace('/'), 1200);
     });
-
-    init();
+    init().catch(error => { console.error(error); say('Could not load checkout. Reload and try again.', 'error'); });
   </script>
 </body>
 </html>
